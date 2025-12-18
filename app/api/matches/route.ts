@@ -36,11 +36,14 @@ export async function GET() {
     }
 
     // Get user IDs for profiles
-    const userIds = [
-      ...new Set(
-        existingMatches.flatMap((m) => [m.user1_id, m.user2_id]).filter((id) => id !== session.user.id)
-      ),
-    ]
+    const userIds = Array.from(
+      new Set(
+        existingMatches
+          .flatMap((m) => [m.user1_id, m.user2_id])
+          .filter((id) => id !== session.user.id)
+      )
+    )
+    
 
     // Fetch profiles
     const { data: profiles, error: profilesError } = await supabase

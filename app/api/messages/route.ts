@@ -34,7 +34,10 @@ export async function GET(request: Request) {
     }
 
     // Get sender profiles
-    const senderIds = [...new Set(messages?.map((m: any) => m.sender_id) || [])]
+    const senderIds = Array.from(
+      new Set(messages?.map((m: any) => m.sender_id) || [])
+    )
+    
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, name, image")

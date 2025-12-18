@@ -94,7 +94,10 @@ export async function findMatches(userId: string): Promise<MatchResult[]> {
   }
 
   // Get unique user IDs from other items
-  const otherUserIds = [...new Set(allItems.map((item) => item.user_id))]
+  const otherUserIds = Array.from(
+    new Set(allItems.map((item) => item.user_id))
+  )
+  
 
   // Fetch profiles for other users
   const { data: profiles, error: profilesError } = await supabase
