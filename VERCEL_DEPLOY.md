@@ -6,7 +6,7 @@
 git init
 git add .
 git commit -m "Ready to deploy"
-git remote add origin https://github.com/YOUR_USERNAME/bucket-buddies.git
+git remote add origin https://github.com/divyangshu-19/Bucket-Buddies.git
 git push -u origin main
 ```
 
