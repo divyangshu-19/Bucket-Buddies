@@ -51,25 +51,27 @@ export function ChatClient({
     fetchMessages(supabase)
 
     // Set up Supabase Realtime subscription
+    const channelName = `chat-${[currentUserId, otherUser.id].sort().join('-')}`
+    console.log('🔌 Setting up realtime subscription:', channelName)
+
     const channel = supabase
-      .channel(`chat:${[currentUserId, otherUser.id].sort().join("-")}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `or(and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUser.id}),and(sender_id.eq.${otherUser.id},receiver_id.eq.${currentUserId}))`,
         },
-        async (payload) => {
-          // Fetch the new message
-          const { data: newMsg } = await supabase
-            .from("messages")
-            .select("*")
-            .eq("id", payload.new.id)
-            .single()
-
-          if (newMsg) {
+        async (payload: any) => {
+          console.log('📨 Realtime message received:', payload)
+          // Check if this message is part of our conversation
+          const newMsg = payload.new
+          if (
+            (newMsg.sender_id === currentUserId && newMsg.receiver_id === otherUser.id) ||
+            (newMsg.sender_id === otherUser.id && newMsg.receiver_id === currentUserId)
+          ) {
+            console.log('✅ Message is for this conversation')
             // Get sender profile
             const { data: senderProfile } = await supabase
               .from("profiles")
@@ -102,12 +104,27 @@ export function ChatClient({
           }
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Successfully subscribed to realtime chat updates')
+        } else if (status === 'CLOSED') {
+          console.log('❌ Realtime subscription closed')
+        }
+      })
 
     channelRef.current = channel
 
+    // Fallback polling in case realtime fails
+    const pollInterval = setInterval(async () => {
+      const supabase = createClient()
+      await fetchMessages(supabase)
+    }, 5000) // Poll every 5 seconds as backup
+
     return () => {
+      console.log('Unsubscribing from realtime channel')
       channel.unsubscribe()
+      clearInterval(pollInterval)
     }
   }, [currentUserId, otherUser.id])
 

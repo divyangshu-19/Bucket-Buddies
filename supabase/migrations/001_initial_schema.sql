@@ -110,13 +110,25 @@ CREATE POLICY "Users can update their matches"
   USING (auth.uid() = user1_id OR auth.uid() = user2_id);
 
 -- Messages policies
-CREATE POLICY "Users can view their messages"
+CREATE POLICY "Users can view conversation messages"
   ON public.messages FOR SELECT
-  USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+  USING (
+    auth.uid() = sender_id OR
+    auth.uid() = receiver_id
+  );
 
 CREATE POLICY "Users can send messages"
   ON public.messages FOR INSERT
   WITH CHECK (auth.uid() = sender_id);
+
+-- Enable realtime for messages (allow authenticated users to listen)
+-- This policy allows realtime subscriptions to work
+CREATE POLICY "Enable realtime for messages"
+  ON public.messages FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+-- Add a comment for clarity
+COMMENT ON TABLE public.messages IS 'Chat messages with realtime support enabled';
 
 -- Function to automatically create profile on user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
