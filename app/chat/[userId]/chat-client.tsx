@@ -89,7 +89,16 @@ export function ChatClient({
                 image: senderProfile?.image || null,
               },
             }
-            setMessages((prev) => [...prev, formattedMessage])
+
+            setMessages((prev) => {
+              // Remove any optimistic message with the same content from same sender
+              const filtered = prev.filter((msg) =>
+                !(msg.senderId === newMsg.sender_id &&
+                  msg.content === newMsg.content &&
+                  msg.id.startsWith('temp-'))
+              )
+              return [...filtered, formattedMessage]
+            })
           }
         }
       )
@@ -127,6 +136,23 @@ export function ChatClient({
     if (!newMessage.trim()) return
 
     const messageContent = newMessage.trim()
+    const tempMessageId = `temp-${Date.now()}`
+
+    // Optimistic UI: Add message immediately
+    const optimisticMessage: Message = {
+      id: tempMessageId,
+      content: messageContent,
+      senderId: currentUserId,
+      receiverId: otherUser.id,
+      createdAt: new Date().toISOString(),
+      sender: {
+        id: currentUserId,
+        name: "You",
+        image: null,
+      },
+    }
+
+    setMessages((prev) => [...prev, optimisticMessage])
     setNewMessage("")
 
     try {
@@ -140,13 +166,17 @@ export function ChatClient({
         }),
       })
 
-      if (res.ok) {
-        // Message will be added via Realtime subscription
-        // No need to manually add it here
+      if (!res.ok) {
+        // Remove optimistic message on error
+        setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId))
+        setNewMessage(messageContent)
+        console.error("Failed to send message")
       }
+      // If successful, the real message will come via realtime and replace the optimistic one
     } catch (error) {
       console.error("Failed to send message:", error)
-      // Re-add message to input on error
+      // Remove optimistic message on error
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId))
       setNewMessage(messageContent)
     }
   }
@@ -168,20 +198,20 @@ export function ChatClient({
         </Button>
       </div>
 
-      <Card className="h-[600px] flex flex-col">
-        <CardHeader className="border-b">
+      <Card className="h-[calc(100vh-8rem)] md:h-[600px] max-h-[80vh] flex flex-col mx-2 md:mx-0 card-modern">
+        <CardHeader className="border-b flex-shrink-0">
           <div className="flex items-center gap-3">
-            <Avatar>
+            <Avatar className="h-10 w-10">
               <AvatarImage src={otherUser.image || undefined} />
               <AvatarFallback>
                 {otherUser.name?.charAt(0).toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
-            <CardTitle>{otherUser.name || "Anonymous"}</CardTitle>
+            <CardTitle className="text-lg">{otherUser.name || "Anonymous"}</CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col p-0">
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
             {messages.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 No messages yet. Start the conversation!
@@ -226,7 +256,7 @@ export function ChatClient({
           </div>
           <form
             onSubmit={handleSend}
-            className="border-t p-4 flex gap-2"
+            className="border-t p-4 flex gap-2 flex-shrink-0"
           >
             <Input
               value={newMessage}

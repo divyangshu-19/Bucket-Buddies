@@ -70,9 +70,9 @@ export function ProfileClient({ userId }: ProfileClientProps) {
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold mb-8">Profile</h1>
-      <Card>
+      <Card className="card-modern">
         <CardHeader>
-          <CardTitle>Edit Profile</CardTitle>
+          <CardTitle className="text-primary">Edit Profile</CardTitle>
           <CardDescription>
             Update your profile information
           </CardDescription>

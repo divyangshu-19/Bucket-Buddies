@@ -137,8 +137,8 @@ export function BucketListClient({ userId }: BucketListClientProps) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-6xl mx-auto px-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 md:mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold">My Bucket List</h1>
           <p className="text-muted-foreground mt-2">
@@ -247,7 +247,7 @@ export function BucketListClient({ userId }: BucketListClientProps) {
       </div>
 
       {items.length === 0 ? (
-        <Card>
+        <Card className="card-modern">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <p className="text-muted-foreground text-lg mb-4">
               Your bucket list is empty
@@ -259,9 +259,9 @@ export function BucketListClient({ userId }: BucketListClientProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item) => (
-            <Card key={item.id}>
+            <Card key={item.id} className="card-modern hover:scale-[1.02] transition-transform duration-200">
               <CardHeader>
                 <CardTitle className="text-lg">{item.title}</CardTitle>
                 <CardDescription className="capitalize">

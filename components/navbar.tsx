@@ -105,22 +105,24 @@ export function Navbar() {
   }
 
   return (
-    <nav className="border-b bg-background">
+    <nav className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold text-primary">
+        <Link href="/" className="text-xl md:text-2xl font-bold text-gradient hover:scale-105 transition-transform duration-200">
           Bucket Buddies
         </Link>
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" asChild>
+        <div className="flex items-center gap-2 md:gap-4">
+          <Button variant="ghost" className="hover:bg-primary/10 hover:text-primary transition-colors duration-200" asChild>
             <Link href="/bucket-list" className="flex items-center gap-2">
               <List className="h-4 w-4" />
-              My Bucket List
+              <span className="hidden sm:inline">My Bucket List</span>
+              <span className="sm:hidden">List</span>
             </Link>
           </Button>
-          <Button variant="ghost" asChild>
+          <Button variant="ghost" className="hover:bg-primary/10 hover:text-primary transition-colors duration-200" asChild>
             <Link href="/matches" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Find Buddies
+              <span className="hidden sm:inline">Find Buddies</span>
+              <span className="sm:hidden">Find</span>
             </Link>
           </Button>
           <DropdownMenu>

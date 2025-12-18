@@ -76,16 +76,16 @@ export function MatchesClient({ userId }: MatchesClientProps) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Find Buddies</h1>
-        <p className="text-muted-foreground mt-2">
+    <div className="max-w-6xl mx-auto px-4">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold">Find Buddies</h1>
+        <p className="text-muted-foreground mt-2 text-sm md:text-base">
           Connect with people who share your bucket list dreams
         </p>
       </div>
 
       {matches.length === 0 ? (
-        <Card>
+        <Card className="card-modern">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Users className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground text-lg mb-2">
@@ -97,9 +97,9 @@ export function MatchesClient({ userId }: MatchesClientProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {matches.map((match) => (
-            <Card key={match.matchId}>
+            <Card key={match.matchId} className="card-modern hover:scale-[1.02] transition-transform duration-200">
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">

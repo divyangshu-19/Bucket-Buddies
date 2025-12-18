@@ -25,7 +25,7 @@ export default function SignUpPage() {
 
     try {
       const supabase = createClient()
-      
+
       // Sign up with Supabase Auth
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -44,29 +44,26 @@ export default function SignUpPage() {
         return
       }
 
-      // Update profile with city if provided
-      if (authData.user && city) {
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .update({ city })
-          .eq("id", authData.user.id)
+      // Check if user is already confirmed or needs email confirmation
+      if (authData.user && authData.user.email_confirmed_at) {
+        // User is already confirmed, update profile and sign in
+        if (city) {
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .update({ city })
+            .eq("id", authData.user.id)
 
-        if (profileError) {
-          console.error("Failed to update profile:", profileError)
+          if (profileError) {
+            console.error("Failed to update profile:", profileError)
+          }
         }
-      }
 
-      // Auto sign in after signup
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (signInError) {
-        setError("Account created but sign in failed. Please try signing in.")
-      } else {
         router.push("/bucket-list")
         router.refresh()
+      } else {
+        // Email confirmation required
+        setError("Please check your email and confirm your account to sign in.")
+        // Don't try to sign in immediately, show confirmation message
       }
     } catch (err) {
       setError("Something went wrong. Please try again.")
@@ -78,15 +75,20 @@ export default function SignUpPage() {
   const handleGoogleSignIn = async () => {
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/bucket-list`,
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       })
       if (error) {
         setError(error.message)
       }
+      // OAuth redirect will happen automatically, no need for additional handling
     } catch (err) {
       setError("Failed to sign in with Google")
     }
@@ -95,8 +97,8 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 flex items-center justify-center px-4 py-16">
-        <Card className="w-full max-w-md">
+      <main className="flex-1 flex items-center justify-center px-4 py-8 md:py-16">
+        <Card className="w-full max-w-md mx-4 md:mx-0 card-modern">
           <CardHeader>
             <CardTitle>Sign Up</CardTitle>
             <CardDescription>
@@ -162,7 +164,7 @@ export default function SignUpPage() {
                   onChange={(e) => setCity(e.target.value)}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full btn-primary" disabled={loading}>
                 {loading ? "Creating account..." : "Sign Up"}
               </Button>
             </form>
@@ -181,7 +183,7 @@ export default function SignUpPage() {
             <Button
               type="button"
               variant="outline"
-              className="w-full"
+              className="w-full btn-secondary"
               onClick={handleGoogleSignIn}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">

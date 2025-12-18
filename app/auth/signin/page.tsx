@@ -44,15 +44,20 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/bucket-list`,
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       })
       if (error) {
         setError(error.message)
       }
+      // OAuth redirect will happen automatically, no need for additional handling
     } catch (err) {
       setError("Failed to sign in with Google")
     }
@@ -61,8 +66,8 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 flex items-center justify-center px-4 py-16">
-        <Card className="w-full max-w-md">
+      <main className="flex-1 flex items-center justify-center px-4 py-8 md:py-16">
+        <Card className="w-full max-w-md mx-4 md:mx-0 card-modern">
           <CardHeader>
             <CardTitle>Sign In</CardTitle>
             <CardDescription>
@@ -102,7 +107,7 @@ export default function SignInPage() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full btn-primary" disabled={loading}>
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
@@ -121,7 +126,7 @@ export default function SignInPage() {
             <Button
               type="button"
               variant="outline"
-              className="w-full"
+              className="w-full btn-secondary"
               onClick={handleGoogleSignIn}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
